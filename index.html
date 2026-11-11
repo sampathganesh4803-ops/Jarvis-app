@@ -3,111 +3,252 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>J.A.R.V.I.S. Personal System</title>
+  <title>J.A.R.V.I.S. AI OS</title>
   <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22JARVIS%22%2C%22short_name%22%3A%22JARVIS%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23020617%22%2C%22theme_color%22%3A%22%2306b6d4%22%7D">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { background-color: #020617; color: #38bdf8; font-family: ui-monospace, monospace; }
-    .hud-box { border: 1px solid rgba(56, 189, 248, 0.3); background: rgba(15, 23, 42, 0.7); box-shadow: 0 0 15px rgba(56, 189, 248, 0.15); }
+    .hud-box { border: 1px solid rgba(56, 189, 248, 0.3); background: rgba(15, 23, 42, 0.75); box-shadow: 0 0 15px rgba(56, 189, 248, 0.12); }
     .arc-pulse { animation: pulseCore 2.5s infinite ease-in-out; }
-    @keyframes pulseCore { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px #06b6d4); } 50% { transform: scale(1.06); filter: drop-shadow(0 0 25px #38bdf8); } }
+    @keyframes pulseCore { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px #06b6d4); } 50% { transform: scale(1.05); filter: drop-shadow(0 0 25px #38bdf8); } }
   </style>
 </head>
-<body class="min-h-screen p-4 flex flex-col items-center justify-between">
-  <header class="w-full max-w-md flex justify-between items-center py-2 border-b border-cyan-800 text-xs">
-    <span class="tracking-widest font-bold text-cyan-400">J.A.R.V.I.S. OS v4.2</span>
-    <span id="sys-clock" class="text-cyan-600">00:00:00</span>
+<body class="min-h-screen p-3 flex flex-col justify-between max-w-lg mx-auto select-none">
+
+  <!-- Header -->
+  <header class="flex justify-between items-center py-2 border-b border-cyan-800 text-xs">
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+      <span class="tracking-widest font-bold text-cyan-400">J.A.R.V.I.S. v5.0</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="sys-clock" class="text-cyan-600 font-mono">00:00:00</span>
+      <button id="config-btn" class="border border-cyan-700 px-2 py-0.5 rounded text-[10px] text-cyan-300 hover:bg-cyan-900/50">⚙ API</button>
+    </div>
   </header>
 
-  <main class="w-full max-w-md flex flex-col items-center my-auto space-y-6">
-    <div class="relative flex items-center justify-center w-52 h-52">
-      <div class="absolute inset-0 rounded-full border border-cyan-500/20 animate-spin" style="animation-duration: 15s;"></div>
+  <!-- Arc Core Visualizer -->
+  <main class="flex flex-col items-center my-3 space-y-4">
+    <div class="relative flex items-center justify-center w-44 h-44 cursor-pointer" id="arc-trigger">
+      <div class="absolute inset-0 rounded-full border border-cyan-500/20 animate-spin" style="animation-duration: 18s;"></div>
       <div class="absolute inset-2 rounded-full border border-dashed border-cyan-400/30 animate-spin" style="animation-duration: 25s; animation-direction: reverse;"></div>
-      <div id="arc-core" class="w-32 h-32 rounded-full border-2 border-cyan-300 hud-box flex flex-col items-center justify-center cursor-pointer arc-pulse transition-all">
-        <div class="w-12 h-12 rounded-full bg-cyan-400/20 border border-cyan-200 flex items-center justify-center">
-          <div class="w-4 h-4 rounded-full bg-cyan-300"></div>
+      <div id="arc-core" class="w-28 h-28 rounded-full border-2 border-cyan-300 hud-box flex flex-col items-center justify-center arc-pulse transition-all">
+        <div class="w-10 h-10 rounded-full bg-cyan-400/20 border border-cyan-200 flex items-center justify-center">
+          <div class="w-3.5 h-3.5 rounded-full bg-cyan-300"></div>
         </div>
-        <span id="arc-label" class="text-[10px] uppercase font-bold tracking-widest mt-2 text-cyan-200">STANDBY</span>
+        <span id="arc-label" class="text-[9px] uppercase font-bold tracking-widest mt-1 text-cyan-200">STANDBY</span>
       </div>
     </div>
 
+    <!-- Live Execution Telemetry -->
     <div class="w-full hud-box p-3 rounded-lg text-xs space-y-2">
       <div class="flex justify-between text-cyan-400 font-semibold border-b border-cyan-950 pb-1">
-        <span>DATA CONSENT VAULT</span>
-        <span class="text-emerald-400">ACTIVE</span>
+        <span>ACTIVE DIRECTIVE</span>
+        <span id="exec-status" class="text-emerald-400">IDLE</span>
       </div>
-      <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-300">
-        <div>• Device Storage: <span class="text-emerald-400">Granted</span></div>
-        <div>• Microphone: <span class="text-emerald-400">Ready</span></div>
-        <div>• Location Link: <span class="text-cyan-400">Restricted</span></div>
-        <div>• Autonomous Ops: <span class="text-emerald-400">Enabled</span></div>
+      <div class="text-[11px] text-slate-300 grid grid-cols-2 gap-1.5" id="telemetry-grid">
+        <div>• Voice Engine: <span class="text-emerald-400">Online</span></div>
+        <div>• Execution: <span class="text-cyan-400">Autonomous</span></div>
+        <div>• AI Brain: <span id="brain-tag" class="text-amber-400">Built-in NLP</span></div>
+        <div>• Consent Gate: <span class="text-emerald-400">Verified</span></div>
       </div>
     </div>
 
-    <div class="w-full hud-box p-3 rounded-lg h-36 flex flex-col justify-between text-xs">
-      <div class="text-[11px] text-cyan-500 font-semibold uppercase tracking-wider">Communication Log</div>
-      <div id="dialogue-box" class="overflow-y-auto max-h-20 text-slate-200 space-y-1">
-        <p class="text-cyan-300 font-medium">J.A.R.V.I.S.: Systems initialized and awaiting your command, sir.</p>
+    <!-- Communication & Activity Log -->
+    <div class="w-full hud-box p-3 rounded-lg flex flex-col justify-between text-xs h-56">
+      <div class="text-[10px] text-cyan-500 font-semibold uppercase tracking-wider mb-1 flex justify-between">
+        <span>Operational Log</span>
+        <button id="clear-log" class="text-slate-500 hover:text-cyan-400">clear</button>
       </div>
-      <div class="flex gap-2 pt-2 border-t border-cyan-950">
-        <input id="user-input" type="text" placeholder="Speak or type a command..." class="bg-slate-900 border border-cyan-800 rounded px-2 py-1 flex-1 text-cyan-200 focus:outline-none focus:border-cyan-400 text-xs">
-        <button id="send-btn" class="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-3 py-1 rounded text-xs">RUN</button>
+      <div id="dialogue-box" class="overflow-y-auto flex-1 text-slate-200 space-y-2 pr-1">
+        <p class="text-cyan-300 text-xs">J.A.R.V.I.S.: Systems operational. Tap the core to give a voice command, or type below.</p>
+      </div>
+      <div class="flex gap-2 pt-2 border-t border-cyan-950 mt-1">
+        <input id="user-input" type="text" placeholder="e.g. open youtube, search AP news, 45*12..." class="bg-slate-900 border border-cyan-800 rounded px-2 py-1.5 flex-1 text-cyan-200 focus:outline-none focus:border-cyan-400 text-xs">
+        <button id="send-btn" class="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-3 py-1.5 rounded text-xs">RUN</button>
       </div>
     </div>
   </main>
 
-  <footer class="w-full max-w-md text-center py-2 text-[10px] text-cyan-700">
-    STARK SECURE SUITE // WITH USER CONSENT PROTOCOLS
-  </footer>
+  <!-- Quick Command Chips -->
+  <div class="flex gap-1.5 justify-center overflow-x-auto pb-2 text-[10px]">
+    <button class="chip border border-cyan-800 bg-slate-900/60 text-cyan-300 px-2 py-1 rounded">Open YouTube</button>
+    <button class="chip border border-cyan-800 bg-slate-900/60 text-cyan-300 px-2 py-1 rounded">Set 5m timer</button>
+    <button class="chip border border-cyan-800 bg-slate-900/60 text-cyan-300 px-2 py-1 rounded">Open Maps</button>
+    <button class="chip border border-cyan-800 bg-slate-900/60 text-cyan-300 px-2 py-1 rounded">Weather Vizag</button>
+  </div>
+
+  <!-- API Key Modal -->
+  <div id="api-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="hud-box p-4 rounded-xl w-full max-w-sm space-y-3">
+      <h3 class="text-sm font-bold text-cyan-300">Configure Gemini AI Key</h3>
+      <p class="text-[11px] text-slate-400">Add a Gemini API key for open-ended conversational intelligence. Leave empty to use built-in autonomous task routing.</p>
+      <input id="api-key-input" type="password" placeholder="AIzaSy..." class="w-full bg-slate-900 border border-cyan-800 rounded p-2 text-xs text-cyan-200 focus:outline-none">
+      <div class="flex justify-end gap-2 text-xs">
+        <button id="close-modal" class="px-3 py-1 text-slate-400">Cancel</button>
+        <button id="save-key" class="bg-cyan-600 px-3 py-1 rounded text-slate-950 font-bold">Save Key</button>
+      </div>
+    </div>
+  </div>
 
   <script>
+    // System Clock
     setInterval(() => {
       document.getElementById('sys-clock').innerText = new Date().toLocaleTimeString();
     }, 1000);
 
+    const arcTrigger = document.getElementById('arc-trigger');
     const arcCore = document.getElementById('arc-core');
     const arcLabel = document.getElementById('arc-label');
+    const execStatus = document.getElementById('exec-status');
     const dialogueBox = document.getElementById('dialogue-box');
     const userInput = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
+    const brainTag = document.getElementById('brain-tag');
+
+    // Storage for API key
+    let geminiApiKey = localStorage.getItem('jarvis_gemini_key') || '';
+    if (geminiApiKey) brainTag.innerText = 'Gemini 2.5 Active';
+
+    document.getElementById('config-btn').onclick = () => {
+      document.getElementById('api-key-input').value = geminiApiKey;
+      document.getElementById('api-modal').classList.remove('hidden');
+      document.getElementById('api-modal').classList.add('flex');
+    };
+    document.getElementById('close-modal').onclick = () => {
+      document.getElementById('api-modal').classList.add('hidden');
+      document.getElementById('api-modal').classList.remove('flex');
+    };
+    document.getElementById('save-key').onclick = () => {
+      geminiApiKey = document.getElementById('api-key-input').value.trim();
+      localStorage.setItem('jarvis_gemini_key', geminiApiKey);
+      brainTag.innerText = geminiApiKey ? 'Gemini AI Active' : 'Built-in NLP';
+      document.getElementById('api-modal').classList.add('hidden');
+      document.getElementById('api-modal').classList.remove('flex');
+      addLog('J.A.R.V.I.S.', geminiApiKey ? 'Neural core link established.' : 'Reverted to local offline logic.', 'text-emerald-400');
+    };
+
+    document.querySelectorAll('.chip').forEach(btn => {
+      btn.onclick = () => processCommand(btn.innerText);
+    });
+    document.getElementById('clear-log').onclick = () => {
+      dialogueBox.innerHTML = '';
+    };
 
     function speak(text) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.pitch = 0.95;
-        utterance.rate = 1.0;
-        window.speechSynthesis.speak(utterance);
+        const u = new SpeechSynthesisUtterance(text);
+        u.pitch = 0.95;
+        u.rate = 1.05;
+        window.speechSynthesis.speak(u);
       }
     }
 
     function addLog(speaker, message, color = 'text-cyan-300') {
       const p = document.createElement('p');
-      p.className = color + ' text-xs';
-      p.innerText = `${speaker}: ${message}`;
+      p.className = color + ' text-xs break-words';
+      p.innerHTML = `<strong class="text-cyan-400">${speaker}:</strong> ${message}`;
       dialogueBox.appendChild(p);
       dialogueBox.scrollTop = dialogueBox.scrollHeight;
     }
 
-    function processCommand(cmd) {
+    async function callGemini(prompt) {
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: `You are J.A.R.V.I.S., Tony Stark's sophisticated, concise AI assistant. Respond helpfully in 1 to 2 crisp sentences: ${prompt}` }] }]
+          })
+        });
+        const data = await res.json();
+        return data.candidates[0].content.parts[0].text;
+      } catch (e) {
+        return "I encountered an error connecting to the neural core. Reverting to local parameters.";
+      }
+    }
+
+    async function processCommand(cmd) {
       if (!cmd.trim()) return;
       addLog('User', cmd, 'text-slate-300');
-      const cleanCmd = cmd.toLowerCase();
+      execStatus.innerText = 'PROCESSING';
+      execStatus.className = 'text-amber-400';
 
-      setTimeout(() => {
-        let reply = "Executing requested parameter. All protocols operational.";
-        if (cleanCmd.includes('time') || cleanCmd.includes('date')) {
-          reply = `The current time is ${new Date().toLocaleTimeString()} on ${new Date().toLocaleDateString()}.`;
-        } else if (cleanCmd.includes('who are you') || cleanCmd.includes('jarvis')) {
-          reply = "I am J.A.R.V.I.S., your autonomous personal assistant, configured to assist with complete consent verification.";
-        } else if (cleanCmd.includes('status')) {
-          reply = "All system channels nominal. Audio visualizers and consent encryption active.";
-        } else {
-          reply = `Acknowledged: "${cmd}". Task logged in operational queue.`;
+      const q = cmd.toLowerCase().trim();
+      let reply = '';
+      let actionTaken = false;
+
+      // 1. Math / Calculations
+      const mathMatch = q.match(/^(\d+[\s\+\-\*\/\%\.]+\d+)+$/);
+      if (mathMatch) {
+        try {
+          const ans = Function(`'use strict'; return (${q})`)();
+          reply = `The calculated result is ${ans}.`;
+          actionTaken = true;
+        } catch (_) {}
+      }
+
+      // 2. Open Applications & Links
+      if (!actionTaken && (q.startsWith('open ') || q.includes('launch '))) {
+        if (q.includes('youtube')) {
+          reply = "Launching YouTube interface now, sir.";
+          window.open('https://www.youtube.com', '_blank');
+          actionTaken = true;
+        } else if (q.includes('maps') || q.includes('navigation')) {
+          reply = "Accessing navigation telemetry via Google Maps.";
+          window.open('https://maps.google.com', '_blank');
+          actionTaken = true;
+        } else if (q.includes('whatsapp')) {
+          reply = "Routing through WhatsApp communications.";
+          window.open('https://web.whatsapp.com', '_blank');
+          actionTaken = true;
+        } else if (q.includes('mail') || q.includes('gmail')) {
+          reply = "Accessing mailbox protocols.";
+          window.open('https://mail.google.com', '_blank');
+          actionTaken = true;
         }
-        addLog('J.A.R.V.I.S.', reply, 'text-cyan-300 font-medium');
-        speak(reply);
-      }, 500);
+      }
+
+      // 3. Web Search Directive
+      if (!actionTaken && (q.startsWith('search ') || q.startsWith('google ') || q.startsWith('find '))) {
+        const query = q.replace(/^(search|google|find)\s+(for\s+)?/, '');
+        reply = `Initiating orbital search query for: "${query}".`;
+        window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+        actionTaken = true;
+      }
+
+      // 4. Timers and Alarms
+      if (!actionTaken && (q.includes('timer') || q.includes('alarm'))) {
+        const mins = (q.match(/\d+/) || [5])[0];
+        reply = `Timer established for ${mins} minute(s). I will alert you upon expiration.`;
+        setTimeout(() => {
+          speak(`Sir, your ${mins} minute timer has expired.`);
+          addLog('J.A.R.V.I.S.', `ALERT: ${mins}-minute timer expired.`, 'text-rose-400 font-bold');
+        }, parseInt(mins) * 60 * 1000);
+        actionTaken = true;
+      }
+
+      // 5. Time and Date
+      if (!actionTaken && (q.includes('time') || q.includes('date') || q.includes('day'))) {
+        const now = new Date();
+        reply = `The current time is ${now.toLocaleTimeString()} on ${now.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}.`;
+        actionTaken = true;
+      }
+
+      // 6. Gemini Integration or Intelligent Fallback
+      if (!actionTaken) {
+        if (geminiApiKey) {
+          reply = await callGemini(cmd);
+        } else {
+          reply = `Directive analyzed: "${cmd}". External search protocols ready. Would you like me to query Google or configure a Gemini API key?`;
+        }
+      }
+
+      addLog('J.A.R.V.I.S.', reply, 'text-cyan-300 font-medium');
+      speak(reply);
+      execStatus.innerText = 'ONLINE';
+      execStatus.className = 'text-emerald-400';
     }
 
     sendBtn.addEventListener('click', () => {
@@ -122,13 +263,14 @@
       if (e.key === 'Enter') sendBtn.click();
     });
 
+    // Voice recognition
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       const recognizer = new SpeechRecognition();
       recognizer.continuous = false;
       recognizer.interimResults = false;
 
-      arcCore.addEventListener('click', () => {
+      arcTrigger.addEventListener('click', () => {
         arcLabel.innerText = "LISTENING";
         arcCore.classList.remove('border-cyan-300');
         arcCore.classList.add('border-emerald-400');
@@ -140,20 +282,20 @@
         processCommand(text);
       };
 
-      recognizer.onend = () => {
+      const resetCore = () => {
         arcLabel.innerText = "STANDBY";
         arcCore.classList.remove('border-emerald-400');
         arcCore.classList.add('border-cyan-300');
       };
 
-      recognizer.onerror = () => {
-        arcLabel.innerText = "STANDBY";
-        arcCore.classList.remove('border-emerald-400');
-        arcCore.classList.add('border-cyan-300');
-      };
-    } else {
-      arcCore.addEventListener('click', () => {
-        alert("Speech Recognition not supported in this browser view. Type your command below.");
+      recognizer.onend = resetCore;
+      recognizer.onerror = resetCore;
+    }
+
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('data:application/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGZ1bmN0aW9uKGV2ZW50KSB7fSk7');
       });
     }
   </script>
